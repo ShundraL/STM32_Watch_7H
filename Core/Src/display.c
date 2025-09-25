@@ -141,7 +141,7 @@ void Send_data( uint16_t data)
 {
 	LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	LL_GPIO_ResetOutputPin(CS_GPIO_Port, CS_Pin);
-
+	__NOP();
 	for ( int8_t i = 12; i >=0 ; i--)
 	{
 		  LL_GPIO_ResetOutputPin(WR_GPIO_Port, WR_Pin);
@@ -163,9 +163,10 @@ void Send_command( uint16_t data)
 
 	LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	LL_GPIO_ResetOutputPin(CS_GPIO_Port, CS_Pin);
-
+	__NOP();
 	for ( int8_t i = 11; i >=0 ; i--)
 	{
+		LL_GPIO_ResetOutputPin(WR_GPIO_Port, WR_Pin);
 		if (data & (1<<i))
 		{
 		  LL_GPIO_SetOutputPin(DATA_GPIO_Port, DATA_Pin);
@@ -175,7 +176,6 @@ void Send_command( uint16_t data)
 		  LL_GPIO_ResetOutputPin(DATA_GPIO_Port, DATA_Pin);
 		}
 
-		LL_GPIO_ResetOutputPin(WR_GPIO_Port, WR_Pin);
 		LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	}
 	LL_GPIO_SetOutputPin(CS_GPIO_Port, CS_Pin);
@@ -187,8 +187,10 @@ void Clear_display ( void)
 	uint16_t data = 0b0001010000000000;     // 101 WRITE command 0 ADDR 0 DATA_Pin
     LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	LL_GPIO_ResetOutputPin(CS_GPIO_Port, CS_Pin);
+	__NOP();
 	for ( int8_t i = 12; i >=0 ; i--)
 	{
+	  LL_GPIO_ResetOutputPin(WR_GPIO_Port, WR_Pin);
 	  if (data & (1<<i))
 	  {
 		  LL_GPIO_SetOutputPin(DATA_GPIO_Port, DATA_Pin);
@@ -197,10 +199,9 @@ void Clear_display ( void)
 	  {
 		  LL_GPIO_ResetOutputPin(DATA_GPIO_Port, DATA_Pin);
 	  }
-
-	  LL_GPIO_ResetOutputPin(WR_GPIO_Port, WR_Pin);
 	  LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	}
+
 	LL_GPIO_ResetOutputPin(DATA_GPIO_Port, DATA_Pin);
 	LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	for (uint8_t k=0; k<127; k++)

@@ -72,6 +72,8 @@ void Error_Handler(void);
 #define Key2_GPIO_Port GPIOF
 #define IRQ_Pin GPIO_PIN_0
 #define IRQ_GPIO_Port GPIOA
+#define Bat_Level_Pin GPIO_PIN_1
+#define Bat_Level_GPIO_Port GPIOA
 #define DATA_Pin GPIO_PIN_2
 #define DATA_GPIO_Port GPIOA
 #define WR_Pin GPIO_PIN_3
@@ -84,6 +86,8 @@ void Error_Handler(void);
 #define Key1_GPIO_Port GPIOA
 #define Key3_Pin GPIO_PIN_7
 #define Key3_GPIO_Port GPIOA
+#define TEMP_Pin GPIO_PIN_1
+#define TEMP_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 /* flags register bits definitions*/

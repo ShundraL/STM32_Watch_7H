@@ -19,20 +19,21 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "display.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "main.h"
+#include "display.h"
+
 int8_t second = 0;
-int8_t minute = 13;
-int8_t hour = 12;
-int8_t interrupt_cnt = 0;
+int8_t minute = 9;
+int8_t hour = 22;
+int8_t interrupt_cnt = 100;
 int8_t beep_duration;
 int8_t kbd_temp = 0;
 int8_t kbd_code = 0;
 int8_t setup_tmr = 0;
 uint32_t system_time = 0;
-
 
 /* USER CODE END Includes */
 
@@ -62,6 +63,7 @@ TIM_HandleTypeDef htim1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM1_Init(void);
+/* USER CODE BEGIN PFP */
 static void Beep_Enable(int8_t duration);
 static void Beep_Disable(void);
 static void Separator_Blink(void);
@@ -69,9 +71,6 @@ static void Clock_Routine(void);
 static void Beep_Routine(void);
 static void Keyboard_Routine(void);
 static void Input_data(int8_t position);
-
-/* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -85,7 +84,7 @@ static void Input_data(int8_t position);
   */
 int main(void)
 {
-//	uint16_t flags = 0;
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -110,18 +109,28 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+//  while(1)
+//  {
+//  HAL_GPIO_WritePin(RD_GPIO_Port,RD_Pin,GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(RD_GPIO_Port, RD_Pin,GPIO_PIN_SET);
+//  }
 
-  HAL_TIM_Base_Start_IT(&htim1);
 
 //  Delay(3);
-  Send_command(SYS_EN);
   Send_command(BIAS_COM);
+//  Send_command(SYS_DIS);
   Send_command(TONE_2K);
+  Send_command(SYS_EN);
   Send_command(LCD_ON);
+
+  MX_TIM1_Init();
+  HAL_TIM_Base_Start_IT(&htim1);
+
   Clear_display();
   Display_Upd(FULL_UPD);
 
   Beep_Enable(7);
+
 
   /* USER CODE END 2 */
 
@@ -130,71 +139,64 @@ int main(void)
   while (1)
   {
 //	go_to_stop_mode();
-
-		if (flags & (1<<BEEP_SYNC))
+	if (flags & (1<<BEEP_SYNC))
+	{
+		flags &=~(1<<BEEP_SYNC);
+		if (flags & (1<<BEEP_MODE))
 		{
-			flags &=~(1<<BEEP_SYNC);
-			if (flags & (1<<BEEP_MODE))
+			Beep_Routine();
+		}
+	}
+	if (flags & (1<<KEYB))
+	{
+		Keyboard_Routine();
+	}
+	if (!(flags & (1<<SETUP)))
+	{
+		if (flags & (1<<HALF_SEC))
+		{
+			flags &=~(1<<HALF_SEC);
+			Separator_Blink();
+		}
+		if (flags & (1<<ONE_SEC))
+		{
+			flags &=~(1<<ONE_SEC);
+			Clock_Routine();
+		} // ONE_SEC loop
+	} //NOT SETUP MODE loop
+	else
+	{
+
+		if(!(flags & (1<<EDIT_TIME)))
+		{
+			setup_tmr = SETUP_TMR;
+			flags |= (1<<EDIT_TIME);
+			Input_data(HOUR_L);
+			Send_data(DDOT|MASK_A);		// it shows DDOT
+		}
+		if (flags & (1<<HALF_SEC))
+		{
+			flags &=~(1<<HALF_SEC);
+			Hide_segment();
+		}
+		if(flags & (1<<ONE_SEC))
+		{
+			Show_segment();
+			flags &=~(1<<ONE_SEC);
+			setup_tmr--;
+			if(!setup_tmr)
 			{
-				Beep_Routine();
+				flags &= ~(1<<SETUP);
+				flags &= ~(1<<EDIT_TIME);
+				Display_Upd(FULL_UPD);
 			}
 		}
-		if (flags & (1<<KEYB))
-		{
-			Keyboard_Routine();
-			if (flags & (1<<BEEP_MODE))
-			{
-				Beep_Routine();
-			}
-		}
-
-		if (!(flags & (1<<SETUP)))
-		{
-			if (flags & (1<<HALF_SEC))
-			{
-				flags &=~(1<<HALF_SEC);
-				Separator_Blink();
-			}
-
-			if (flags & (1<<ONE_SEC))
-			{
-				flags &=~(1<<ONE_SEC);
-				Clock_Routine();
-			} // ONE_SEC loop
-		} //NOT SETUP MODE loop
-		else
-		{
-
-			if(!(flags & (1<<EDIT_TIME)))
-			{
-				setup_tmr = SETUP_TMR;
-				flags |= (1<<EDIT_TIME);
-				Input_data(HOUR_L);
-				Send_data(DDOT|MASK_A);		// it shows DDOT
-			}
-			if (flags & (1<<HALF_SEC))
-			{
-				flags &=~(1<<HALF_SEC);
-				Hide_segment();
-			}
-			if(flags & (1<<ONE_SEC))
-			{
-				Show_segment();
-				flags &=~(1<<ONE_SEC);
-				setup_tmr--;
-				if(!setup_tmr)
-				{
-					flags &= ~(1<<SETUP);
-					flags &= ~(1<<EDIT_TIME);
-					Display_Upd(FULL_UPD);
-				}
-			}
-		} //SETUP MODE loop
-	} //endless loop
+	} //SETUP MODE loop
+  } //endless loop
 }
-/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -221,7 +223,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
        	{
        		if (!(flags & (1<<BEEP_MODE)))
        		{
-           		Beep_Enable(25);
+           		Beep_Enable(3);
        		}
        		else
        		{
@@ -271,7 +273,7 @@ void Clock_Routine(void)
 			hour++;
 			if ((hour>=8) & (hour<22))
 			{
-				Beep_Enable(25);
+				Beep_Enable(3);
 			}
 			if (hour == HOUR_LIMIT)
 			{
@@ -288,28 +290,24 @@ void Clock_Routine(void)
 
 void Beep_Routine(void)
 {
-		beep_duration--;
-		if(!beep_duration)
-		{
-			Beep_Disable();
-		}
+	beep_duration--;
+	if(!beep_duration)
+	{
+		Beep_Disable();
+	}
 };
 
 void Keyboard_Routine(void)
 {
    	flags &=~(1<<KEYB);
    	flags |= (1<<SETUP);
-//	Beep_Enable(1);
 };
 
 static void Input_data(int8_t position)
 {
 	input_position = position;
-};
-
-
-/* USER CODE END 3 */
-
+  /* USER CODE END 3 */
+}
 
 /**
   * @brief System Clock Configuration
@@ -337,8 +335,8 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV16;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV16;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
@@ -365,7 +363,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 125;
+  htim1.Init.Prescaler = 500;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 9;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -409,13 +407,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, DATA_Pin|WR_Pin|RD_Pin|CS_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin : PF0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(GPIOA, DATA_Pin|WR_Pin|RD_Pin|CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : Key2_Pin */
   GPIO_InitStruct.Pin = Key2_Pin;
@@ -429,11 +421,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : Bat_Level_Pin */
+  GPIO_InitStruct.Pin = Bat_Level_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(Bat_Level_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DATA_Pin WR_Pin RD_Pin CS_Pin */
   GPIO_InitStruct.Pin = DATA_Pin|WR_Pin|RD_Pin|CS_Pin;
@@ -442,16 +434,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : TEMP_Pin */
+  GPIO_InitStruct.Pin = TEMP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(TEMP_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA9 PA10 */
   GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
