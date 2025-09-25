@@ -208,7 +208,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     	{
     		interrupt_cnt = 0;
     		flags |=(1<<ONE_SEC);
-//    		flags |=(1<<HALF_SEC);
+    		flags |=(1<<HALF_SEC);
     	}
     	if(interrupt_cnt == HALF_SEC_CNT)
     	{
