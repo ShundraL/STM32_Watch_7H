@@ -70,8 +70,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Key2_Pin GPIO_PIN_1
 #define Key2_GPIO_Port GPIOF
-#define IRQ_Pin GPIO_PIN_0
-#define IRQ_GPIO_Port GPIOA
 #define Bat_Level_Pin GPIO_PIN_1
 #define Bat_Level_GPIO_Port GPIOA
 #define DATA_Pin GPIO_PIN_2

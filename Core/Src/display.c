@@ -184,8 +184,10 @@ void Send_command( uint16_t data)
 
 void Clear_display ( void)
 {
-	uint16_t data = 0b0001010000000000;     // 101 WRITE command 0 ADDR 0 DATA_Pin
-    LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
+	/* Successive Address Writing is used */
+	/* 101 WRITE command 0 ADDR 0 DATA_Pin */
+	uint16_t data = 0b0001010000000000;
+	LL_GPIO_SetOutputPin(WR_GPIO_Port, WR_Pin);
 	LL_GPIO_ResetOutputPin(CS_GPIO_Port, CS_Pin);
 	__NOP();
 	for ( int8_t i = 12; i >=0 ; i--)

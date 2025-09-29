@@ -88,6 +88,7 @@ void Write_segment_data (uint8_t digit, uint8_t segment);
 void Display_Upd(int8_t mode);
 void Hide_segment(void);
 void Show_segment(void);
+void go_to_sleep(void);
 
 
 #endif /* INC_DISPLAY_H_ */

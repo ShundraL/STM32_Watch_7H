@@ -1,6 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
-CAD.formats=
-CAD.pinconfig=
+CAD.formats=[{"id"\:0,"cad_product"\:"Altium Designer","cad_family"\:"Altium"}]
+CAD.pinconfig=Dual
 CAD.provider=
 File.Version=6
 GPIO.groupedBy=Group By Peripherals
@@ -43,11 +43,8 @@ NVIC.PendSV_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false
 NVIC.SVC_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:true
 NVIC.SysTick_IRQn=true\:3\:0\:false\:false\:true\:false\:true\:false
 NVIC.TIM1_BRK_UP_TRG_COM_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-PA0.GPIOParameters=GPIO_PuPd,GPIO_Label
-PA0.GPIO_Label=IRQ
-PA0.GPIO_PuPd=GPIO_PULLUP
 PA0.Locked=true
-PA0.Signal=GPIO_Input
+PA0.Signal=GPIO_Analog
 PA1.GPIOParameters=GPIO_Label
 PA1.GPIO_Label=Bat_Level
 PA1.Locked=true

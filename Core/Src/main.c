@@ -26,7 +26,7 @@
 #include "display.h"
 
 int8_t second = 0;
-int8_t minute = 9;
+int8_t minute = 48 ;
 int8_t hour = 22;
 int8_t interrupt_cnt = 100;
 int8_t beep_duration;
@@ -102,7 +102,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  /* Stop SysTick & disable interrupt */
+  SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -116,9 +117,9 @@ int main(void)
 //  }
 
 
-//  Delay(3);
+  Delay(3);
   Send_command(BIAS_COM);
-//  Send_command(SYS_DIS);
+  Send_command(SYS_DIS);
   Send_command(TONE_2K);
   Send_command(SYS_EN);
   Send_command(LCD_ON);
@@ -138,7 +139,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	go_to_stop_mode();
+	go_to_sleep();
 	if (flags & (1<<BEEP_SYNC))
 	{
 		flags &=~(1<<BEEP_SYNC);
@@ -232,6 +233,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
        		flags |=(1<<KEYB);
        	}
     }
+};
+
+
+void go_to_sleep(void)
+{
+//    HAL_SuspendTick();                     // Stop SysTick if not needed for wake-up
+    SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;     // Select SLEEP mode (not deep sleep)
+    __WFI();                                // Wait For Interrupt
+//    HAL_ResumeTick();                       // Resume SysTick after wake-up
 };
 
 void Beep_Enable(int8_t duration)
@@ -415,23 +425,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(Key2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IRQ_Pin Key1_Pin Key3_Pin */
-  GPIO_InitStruct.Pin = IRQ_Pin|Key1_Pin|Key3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : Bat_Level_Pin */
-  GPIO_InitStruct.Pin = Bat_Level_Pin;
+  /*Configure GPIO pins : PA0 Bat_Level_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|Bat_Level_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Bat_Level_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DATA_Pin WR_Pin RD_Pin CS_Pin */
   GPIO_InitStruct.Pin = DATA_Pin|WR_Pin|RD_Pin|CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : Key1_Pin Key3_Pin */
+  GPIO_InitStruct.Pin = Key1_Pin|Key3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : TEMP_Pin */
