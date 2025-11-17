@@ -124,8 +124,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
 
   Clear_display();
-  Display_Upd(FULL_UPD);
-  Beep_Enable(7);
+  Display_Upd(TIME_MODE);
+  Beep_Enable(8);
 
 
   /* USER CODE END 2 */
@@ -179,12 +179,13 @@ int main(void)
 		{
 			Show_segment();
 			flags &=~(1<<ONE_SEC);
+			flags &=~(1<<HALF_SEC);
 			setup_tmr--;
 			if(!setup_tmr)
 			{
 				flags &= ~(1<<SETUP);
 				flags &= ~(1<<EDIT_TIME);
-				Display_Upd(FULL_UPD);
+				Display_Upd(TIME_MODE);
 			}
 		}
 	} //SETUP MODE loop
@@ -278,20 +279,29 @@ void Clock_Routine(void)
 			hour++;
 			if ((hour>=8) & (hour<22))
 			{
-				Beep_Enable(3);
+				Beep_Enable(7);
 			}
 			if (hour == HOUR_LIMIT)
 			{
 				hour = 0;
 			}
-			Display_Upd(FULL_UPD);
 		}
-		else
-		{
-			Display_Upd(HALF_UPD);
-		}
+		Display_Upd(TIME_MODE);
 	}
+	else if (second == 45)
+		{
+			flags |=(1<<DOTS);			// Hide DOTS
+			Separator_Blink();
+    		flags |=(1<<DONT_BLINK);	// Temperature mode separator is not shown
+			Display_Upd(TEMP_MODE);
+		}
+	else if (second == 55)
+		{
+			flags &=~(1<<DONT_BLINK);   // Time mode separator is shown
+			Display_Upd(TIME_MODE);
+		}
 };
+
 
 void Beep_Routine(void)
 {

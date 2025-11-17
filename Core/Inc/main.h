@@ -111,6 +111,8 @@ void Error_Handler(void);
 #define BEEP_SYNC	5
 #define HALF_SEC	6
 #define EDIT_TIME	7
+#define IRQ_FLAG	8
+#define DONT_BLINK	9
 
 
 #define KEY1		0

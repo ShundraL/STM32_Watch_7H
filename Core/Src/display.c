@@ -218,8 +218,7 @@ void Write_segment_data(uint8_t digit, uint8_t segment)
 
 void Display_Upd(int8_t mode)
 {
-
-	if(mode == FULL_UPD)
+	if(mode == TIME_MODE)
 	{
 		display_buffer[HOUR_H] = hour/10;
 		display_buffer[HOUR_L] = hour%10;
@@ -230,13 +229,11 @@ void Display_Upd(int8_t mode)
 			Write_segment_data(display_buffer[i],i);
 		}
 	}
-	else
+	if(mode == TEMP_MODE)
 	{
-		display_buffer[MIN_H] = minute/10;
-		display_buffer[MIN_L] = minute%10;
-		for (int8_t i = MIN_H; i < 4; i++)
+		for (int8_t i = 0; i < 4; i++)
 		{
-			Write_segment_data(display_buffer[i],i);
+			Write_segment_data(temperature_buffer[i],i);
 		}
 	}
 };
