@@ -18,10 +18,10 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "main.h"
 #include "display.h"
 #include "global_vars.h"
 
@@ -59,7 +59,7 @@ static void MX_TIM1_Init(void);
 static void Beep_Enable(int8_t duration);
 static void Beep_Disable(void);
 static void Separator_Blink(void);
-static void Clock_Routine(void);
+static void Time_Calculation(void);
 static void Beep_Routine(void);
 static void Keyboard_Routine(void);
 static void Input_data(int8_t position);
@@ -135,6 +135,11 @@ int main(void)
   while (1)
   {
 	go_to_sleep();
+	if((flags & (1<<IRQ_FLAG)))
+	{
+		flags &=~(1<<IRQ_FLAG);
+		Time_Calculation();
+	}
 	if (flags & (1<<BEEP_SYNC))
 	{
 		flags &=~(1<<BEEP_SYNC);
@@ -157,12 +162,11 @@ int main(void)
 		if (flags & (1<<ONE_SEC))
 		{
 			flags &=~(1<<ONE_SEC);
-			Clock_Routine();
+			Time_Calculation();
 		} // ONE_SEC loop
 	} //NOT SETUP MODE loop
 	else
 	{
-
 		if(!(flags & (1<<EDIT_TIME)))
 		{
 			setup_tmr = SETUP_TMR;
@@ -194,6 +198,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	   if (GPIO_Pin == IRQ_Pin)
+	    {
+		   flags |=(1<<IRQ_FLAG);
+	    }
+};
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -255,18 +267,21 @@ void Beep_Disable(void)
 
 void Separator_Blink(void)
 {
-	if (flags & (1<<DOTS))
+	if (!(flags & (1<<DONT_BLINK)))		// Time mode separator is shown
 	{
-		flags &=~(1<<DOTS);
-		Send_data(DDOT|MASK_B);
-	}
-	else
-	{
-		flags |=(1<<DOTS);
-		Send_data(DDOT|MASK_A);
+		if (flags & (1<<DOTS))
+		{
+			flags &=~(1<<DOTS);
+			Send_data(DDOT|MASK_B);
+		}
+		else
+		{
+			flags |=(1<<DOTS);
+			Send_data(DDOT|MASK_A);
+		}
 	}
 };
-void Clock_Routine(void)
+void Time_Calculation(void)
 {
 	second++;
 	if (second == SECOND_LIMIT)
@@ -301,7 +316,6 @@ void Clock_Routine(void)
 			Display_Upd(TIME_MODE);
 		}
 };
-
 
 void Beep_Routine(void)
 {
@@ -413,6 +427,7 @@ static void MX_TIM1_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
   /* USER CODE END MX_GPIO_Init_1 */
@@ -439,12 +454,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
   LL_GPIO_Init(Key2_GPIO_Port, &GPIO_InitStruct);
-
-  /**/
-  GPIO_InitStruct.Pin = IRQ_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /**/
   GPIO_InitStruct.Pin = Bat_Level_Pin;
@@ -519,6 +528,26 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_4;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /**/
+  LL_SYSCFG_SetEXTISource(LL_SYSCFG_EXTI_PORTA, LL_SYSCFG_EXTI_LINE0);
+
+  /**/
+  LL_GPIO_SetPinPull(IRQ_GPIO_Port, IRQ_Pin, LL_GPIO_PULL_UP);
+
+  /**/
+  LL_GPIO_SetPinMode(IRQ_GPIO_Port, IRQ_Pin, LL_GPIO_MODE_INPUT);
+
+  /**/
+  EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_0;
+  EXTI_InitStruct.LineCommand = ENABLE;
+  EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
+  EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING;
+  LL_EXTI_Init(&EXTI_InitStruct);
+
+  /* EXTI interrupt init*/
+  NVIC_SetPriority(EXTI0_1_IRQn, 0);
+  NVIC_EnableIRQ(EXTI0_1_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   /* USER CODE END MX_GPIO_Init_2 */

@@ -10,8 +10,8 @@
 #include "global_vars.h"
 
 int8_t second = 41;
-int8_t minute = 48 ;
-int8_t hour = 20;
+int8_t minute = 02 ;
+int8_t hour = 22;
 int8_t interrupt_cnt = 100;
 int8_t beep_duration;
 int8_t kbd_temp = 0;

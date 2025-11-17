@@ -53,3 +53,6 @@ dkms.conf
 
 # debug information files
 *.dwo
+/Drivers/CMSIS/Device/ST/STM32F0xx/Include
+/Drivers/CMSIS/Include
+/Drivers

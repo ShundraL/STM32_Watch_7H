@@ -9,7 +9,6 @@
 #define INC_GLOBAL_VARS_H_
 #include "stm32f0xx_hal.h"
 
-
 extern uint8_t temperature_buffer[4];
 extern uint8_t display_buffer[4];
 

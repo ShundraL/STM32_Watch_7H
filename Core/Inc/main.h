@@ -38,8 +38,6 @@ extern "C" {
 #include "stm32f0xx_ll_pwr.h"
 #include "stm32f0xx_ll_dma.h"
 #include "stm32f0xx_ll_gpio.h"
-#include "global_vars.h"
-
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -84,6 +82,7 @@ void Error_Handler(void);
 #define Key2_GPIO_Port GPIOF
 #define IRQ_Pin LL_GPIO_PIN_0
 #define IRQ_GPIO_Port GPIOA
+#define IRQ_EXTI_IRQn EXTI0_1_IRQn
 #define Bat_Level_Pin LL_GPIO_PIN_1
 #define Bat_Level_GPIO_Port GPIOA
 #define DATA_Pin LL_GPIO_PIN_2
