@@ -28,6 +28,18 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
+#include "stm32f0xx_ll_crs.h"
+#include "stm32f0xx_ll_rcc.h"
+#include "stm32f0xx_ll_bus.h"
+#include "stm32f0xx_ll_system.h"
+#include "stm32f0xx_ll_exti.h"
+#include "stm32f0xx_ll_cortex.h"
+#include "stm32f0xx_ll_utils.h"
+#include "stm32f0xx_ll_pwr.h"
+#include "stm32f0xx_ll_dma.h"
+#include "stm32f0xx_ll_gpio.h"
+#include "global_vars.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -68,23 +80,25 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Key2_Pin GPIO_PIN_1
+#define Key2_Pin LL_GPIO_PIN_1
 #define Key2_GPIO_Port GPIOF
-#define Bat_Level_Pin GPIO_PIN_1
+#define IRQ_Pin LL_GPIO_PIN_0
+#define IRQ_GPIO_Port GPIOA
+#define Bat_Level_Pin LL_GPIO_PIN_1
 #define Bat_Level_GPIO_Port GPIOA
-#define DATA_Pin GPIO_PIN_2
+#define DATA_Pin LL_GPIO_PIN_2
 #define DATA_GPIO_Port GPIOA
-#define WR_Pin GPIO_PIN_3
+#define WR_Pin LL_GPIO_PIN_3
 #define WR_GPIO_Port GPIOA
-#define RD_Pin GPIO_PIN_4
+#define RD_Pin LL_GPIO_PIN_4
 #define RD_GPIO_Port GPIOA
-#define CS_Pin GPIO_PIN_5
+#define CS_Pin LL_GPIO_PIN_5
 #define CS_GPIO_Port GPIOA
-#define Key1_Pin GPIO_PIN_6
+#define Key1_Pin LL_GPIO_PIN_6
 #define Key1_GPIO_Port GPIOA
-#define Key3_Pin GPIO_PIN_7
+#define Key3_Pin LL_GPIO_PIN_7
 #define Key3_GPIO_Port GPIOA
-#define TEMP_Pin GPIO_PIN_1
+#define TEMP_Pin LL_GPIO_PIN_1
 #define TEMP_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */

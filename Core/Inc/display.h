@@ -5,6 +5,7 @@
  *  Author: oleksandr.levchenko
  */
 
+#include <global_vars.h>
 #include "stm32f0xx_ll_rcc.h"
 #include "stm32f0xx_ll_bus.h"
 #include "stm32f0xx_ll_system.h"
@@ -14,6 +15,7 @@
 #include "stm32f0xx_ll_pwr.h"
 #include "stm32f0xx_ll_dma.h"
 #include "stm32f0xx_ll_gpio.h"
+
 
 #ifndef INC_DISPLAY_H_
 #define INC_DISPLAY_H_
@@ -55,7 +57,9 @@
 #define MASK_B     0b0001010000000000
 #define SEG_ON     0b0001010000001100
 #define SEG_OFF    0b0001010000000000
-#define BLANK      17
+#define BLANK      10
+#define DEGREE	   15
+#define DASH	   16
 
 #define CMD        0b100
 #define READ       0b110
@@ -71,6 +75,15 @@
 #define TONE_2K    0b100011000000
 #define TONE_OFF   0b100000010000
 #define TONE_ON    0b100000010010
+#define XTAL_32K   0b100000101000	// System clock source, crystal oscillator
+#define IRQ_DIS    0b100100000000
+#define IRQ_EN     0b100100010000
+#define FREQ_1HZ   0b100101000000	//Time base/WDT clock output: 1Hz
+#define TIMER_DIS  0b100000001000
+#define TIMER_EN   0b100000001100
+#define CLR_TIMER  0b100000011000
+#define WDT_DIS    0b100000001010
+
 #define FULL_UPD	0
 #define HALF_UPD	1
 #define HOUR_H		0

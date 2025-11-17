@@ -6,8 +6,8 @@
  */
 #include "main.h"
 #include "display.h"
-
-uint8_t display_buffer[4]={0,0,0,0};
+#include "global_vars.h"
+#include "stm32f0xx_hal.h"
 
 /* [LCD digit number][digit code]*/
 uint16_t lcd_codes[][4][7] =
@@ -114,14 +114,7 @@ uint16_t lcd_codes[][4][7] =
         {A2|SEG_OFF,B2|SEG_OFF,C2|SEG_OFF,D2|SEG_OFF,E2|SEG_OFF,F2|SEG_OFF,G2|SEG_ON},
         {A3|SEG_OFF,B3|SEG_OFF,C3|SEG_OFF,D3|SEG_OFF,E3|SEG_OFF,F3|SEG_OFF,G3|SEG_ON},
         {A4|SEG_OFF,B4|SEG_OFF,C4|SEG_OFF,D4|SEG_OFF,E4|SEG_OFF,F4|SEG_OFF,G4|SEG_ON}
-    },
-    {                                                                // Blank
-        {A1|SEG_OFF,B1|SEG_OFF,C1|SEG_OFF,D1|SEG_OFF,E1|SEG_OFF,F1|SEG_OFF,G1|SEG_OFF},
-        {A2|SEG_OFF,B2|SEG_OFF,C2|SEG_OFF,D2|SEG_OFF,E2|SEG_OFF,F2|SEG_OFF,G2|SEG_OFF},
-        {A3|SEG_OFF,B3|SEG_OFF,C3|SEG_OFF,D3|SEG_OFF,E3|SEG_OFF,F3|SEG_OFF,G3|SEG_OFF},
-        {A4|SEG_OFF,B4|SEG_OFF,C4|SEG_OFF,D4|SEG_OFF,E4|SEG_OFF,F4|SEG_OFF,G4|SEG_OFF}
     }
-
 };
 
 
