@@ -112,6 +112,8 @@ void Error_Handler(void);
 #define EDIT_TIME	7
 #define IRQ_FLAG	8
 #define DONT_BLINK	9
+#define TIME_MODE	10
+#define TEMP_MODE	11
 
 
 #define KEY1		0

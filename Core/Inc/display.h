@@ -84,8 +84,6 @@
 #define CLR_TIMER  0b100000011000
 #define WDT_DIS    0b100000001010
 
-#define TIME_MODE	0
-#define TEMP_MODE	1
 #define HOUR_H		0
 #define HOUR_L		1
 #define MIN_H		2

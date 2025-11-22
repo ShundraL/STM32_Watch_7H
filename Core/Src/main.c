@@ -58,7 +58,6 @@ static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 static void Beep_Enable(int8_t duration);
 static void Beep_Disable(void);
-static void Separator_Blink(void);
 static void Time_Calculation(void);
 static void Beep_Routine(void);
 static void Keyboard_Routine(void);
@@ -157,16 +156,25 @@ int main(void)
 		if (flags & (1<<HALF_SEC))
 		{
 			flags &=~(1<<HALF_SEC);
-			Separator_Blink();
+			flags &=~(1<<DOTS);
+			Send_data(DDOT|MASK_B);		// DDOT is hide
 		}
 		if (flags & (1<<ONE_SEC))
 		{
 			flags &=~(1<<ONE_SEC);
-			Time_Calculation();
+			flags |=(1<<DOTS);
+			Send_data(DDOT|MASK_A);		// it shows DDOT
 		} // ONE_SEC loop
 	} //NOT SETUP MODE loop
 	else
 	{
+		if (flags & (1<<TEMP_MODE))		// reset TEMP_MODE mode if key is pressed
+		{
+    		flags &=~(1<<DONT_BLINK);	// Time  mode is active
+			flags |=(1<<TIME_MODE);
+			flags &=~(1<<TEMP_MODE);
+			Display_Upd(TIME_MODE);
+		}
 		if(!(flags & (1<<EDIT_TIME)))
 		{
 			setup_tmr = SETUP_TMR;
@@ -193,19 +201,12 @@ int main(void)
 			}
 		}
 	} //SETUP MODE loop
-  } //endless loop
-}
+  }   //endless loop
+}     // main
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	   if (GPIO_Pin == IRQ_Pin)
-	    {
-		   flags |=(1<<IRQ_FLAG);
-	    }
-};
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -265,22 +266,6 @@ void Beep_Disable(void)
 	Send_command(TONE_OFF);
 };
 
-void Separator_Blink(void)
-{
-	if (!(flags & (1<<DONT_BLINK)))		// Time mode separator is shown
-	{
-		if (flags & (1<<DOTS))
-		{
-			flags &=~(1<<DOTS);
-			Send_data(DDOT|MASK_B);
-		}
-		else
-		{
-			flags |=(1<<DOTS);
-			Send_data(DDOT|MASK_A);
-		}
-	}
-};
 void Time_Calculation(void)
 {
 	second++;
@@ -305,14 +290,16 @@ void Time_Calculation(void)
 	}
 	else if (second == 45)
 		{
-			flags |=(1<<DOTS);			// Hide DOTS
-			Separator_Blink();
-    		flags |=(1<<DONT_BLINK);	// Temperature mode separator is not shown
+			Send_data(DDOT|MASK_B);		// Hide DOTS
+    		flags |=(1<<DONT_BLINK);	// Temperature mode, separator is not shown
+    		flags |=(1<<TEMP_MODE);
 			Display_Upd(TEMP_MODE);
 		}
 	else if (second == 55)
 		{
-			flags &=~(1<<DONT_BLINK);   // Time mode separator is shown
+			flags &=~(1<<DONT_BLINK);   // Time mode, separator is shown
+    		flags &=~(1<<TEMP_MODE);
+    		flags |=(1<<TIME_MODE);
 			Display_Upd(TIME_MODE);
 		}
 };
