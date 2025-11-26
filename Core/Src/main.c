@@ -125,7 +125,7 @@ int main(void)
   Clear_display();
   Display_Upd(TIME_MODE);
   Beep_Enable(8);
-
+  flags |= (1<<TIME_MODE);
 
   /* USER CODE END 2 */
 
@@ -133,7 +133,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	go_to_sleep();
+	Go_To_Sleep();
 	if((flags & (1<<IRQ_FLAG)))
 	{
 		flags &=~(1<<IRQ_FLAG);
@@ -151,30 +151,21 @@ int main(void)
 	{
 		Keyboard_Routine();
 	}
-	if (!(flags & (1<<SETUP)))
+	if (flags & (1<<TIME_MODE))
 	{
 		if (flags & (1<<HALF_SEC))
 		{
 			flags &=~(1<<HALF_SEC);
-			flags &=~(1<<DOTS);
 			Send_data(DDOT|MASK_B);		// DDOT is hide
 		}
-		if (flags & (1<<ONE_SEC))
+		else if (flags & (1<<ONE_SEC))
 		{
 			flags &=~(1<<ONE_SEC);
-			flags |=(1<<DOTS);
 			Send_data(DDOT|MASK_A);		// it shows DDOT
-		} // ONE_SEC loop
-	} //NOT SETUP MODE loop
-	else
-	{
-		if (flags & (1<<TEMP_MODE))		// reset TEMP_MODE mode if key is pressed
-		{
-    		flags &=~(1<<DONT_BLINK);	// Time  mode is active
-			flags |=(1<<TIME_MODE);
-			flags &=~(1<<TEMP_MODE);
-			Display_Upd(TIME_MODE);
 		}
+	} // blink DDOT
+	else if (flags & (1<<SETUP_MODE))
+	{
 		if(!(flags & (1<<EDIT_TIME)))
 		{
 			setup_tmr = SETUP_TMR;
@@ -191,16 +182,16 @@ int main(void)
 		{
 			Show_segment();
 			flags &=~(1<<ONE_SEC);
-			flags &=~(1<<HALF_SEC);
 			setup_tmr--;
 			if(!setup_tmr)
 			{
-				flags &= ~(1<<SETUP);
+				flags |=(1<<TIME_MODE);
+				flags &= ~(1<<SETUP_MODE);
 				flags &= ~(1<<EDIT_TIME);
 				Display_Upd(TIME_MODE);
 			}
 		}
-	} //SETUP MODE loop
+	}	//SETUP MODE loop
   }   //endless loop
 }     // main
 
@@ -218,9 +209,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     	{
     		interrupt_cnt = 0;
     		flags |=(1<<ONE_SEC);
-    		flags |=(1<<HALF_SEC);
     	}
-    	if(interrupt_cnt == HALF_SEC_CNT)
+    	else if(interrupt_cnt == HALF_SEC_CNT)
     	{
     		flags |=(1<<HALF_SEC);
     	}
@@ -244,8 +234,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 };
 
-
-void go_to_sleep(void)
+void Go_To_Sleep(void)
 {
 //    HAL_SuspendTick();                     // Stop SysTick if not needed for wake-up
     SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;     // Select SLEEP mode (not deep sleep)
@@ -291,13 +280,12 @@ void Time_Calculation(void)
 	else if (second == 45)
 		{
 			Send_data(DDOT|MASK_B);		// Hide DOTS
-    		flags |=(1<<DONT_BLINK);	// Temperature mode, separator is not shown
     		flags |=(1<<TEMP_MODE);
+    		flags &=~(1<<TIME_MODE);
 			Display_Upd(TEMP_MODE);
 		}
 	else if (second == 55)
 		{
-			flags &=~(1<<DONT_BLINK);   // Time mode, separator is shown
     		flags &=~(1<<TEMP_MODE);
     		flags |=(1<<TIME_MODE);
 			Display_Upd(TIME_MODE);
@@ -316,7 +304,13 @@ void Beep_Routine(void)
 void Keyboard_Routine(void)
 {
    	flags &=~(1<<KEYB);
-   	flags |= (1<<SETUP);
+   	flags |= (1<<SETUP_MODE);
+	flags &=~(1<<TIME_MODE);
+   	if(flags & (1<<TEMP_MODE))
+   	{
+		flags &=~(1<<TEMP_MODE);
+		Display_Upd(TIME_MODE);
+   	}
 };
 
 static void Input_data(int8_t position)

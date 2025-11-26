@@ -106,7 +106,7 @@ void Error_Handler(void);
 #define DOTS    	1
 #define KEYB		2
 #define BEEP_MODE	3
-#define SETUP		4
+#define SETUP_MODE	4
 #define BEEP_SYNC	5
 #define HALF_SEC	6
 #define EDIT_TIME	7
