@@ -119,10 +119,9 @@ int main(void)
   Send_command(SYS_EN);
   Send_command(LCD_ON);
 
-  MX_TIM1_Init();
   HAL_TIM_Base_Start_IT(&htim1);
 
-  Clear_display();
+//  Clear_display();
   Display_Upd(TIME_MODE);
   Beep_Enable(8);
   flags |= (1<<TIME_MODE);
@@ -277,19 +276,22 @@ void Time_Calculation(void)
 		}
 		Display_Upd(TIME_MODE);
 	}
-	else if (second == 45)
+	if (!(flags & (1<<SETUP_MODE)))		// do not switch to TEMP MODe if SETUP mode is active
+	{
+		if (second == 45)
 		{
 			Send_data(DDOT|MASK_B);		// Hide DOTS
-    		flags |=(1<<TEMP_MODE);
-    		flags &=~(1<<TIME_MODE);
+			flags |=(1<<TEMP_MODE);
+			flags &=~(1<<TIME_MODE);
 			Display_Upd(TEMP_MODE);
 		}
-	else if (second == 55)
+		else if (second == 55)
 		{
-    		flags &=~(1<<TEMP_MODE);
-    		flags |=(1<<TIME_MODE);
+			flags &=~(1<<TEMP_MODE);
+			flags |=(1<<TIME_MODE);
 			Display_Upd(TIME_MODE);
 		}
+	}
 };
 
 void Beep_Routine(void)
